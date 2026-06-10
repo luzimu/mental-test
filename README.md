@@ -1,92 +1,208 @@
-# 心理健康自评系统：SCL-90 商用兼容前端框架
+<div align="center">
+  <img src="assets/mindscope90-hero.svg" alt="MindScope 90 hero banner" width="100%" />
 
-这是一个纯前端 H5 心理测评系统，适合做体验版、售卖后的交付页面、公众号/社群引流页或小程序迁移原型。
+  # MindScope 90
 
-## 本次版本新增功能
+  ### Smart Mental Health Self-Assessment Platform
 
-- 首页保留访问码验证，但不在页面展示默认访问码
-- 90 题分页测评、必答校验、进度条、移动端适配
-- 本地评分：总分、总均分、阳性项目数、阳性症状均分、十项维度均分
-- 结果页图表：维度雷达图、维度得分排序图
-- 每一个指标都支持“进一步解释”展开查看
-- PDF 报告导出：导出时自动展开全部指标解释
-- 图表 PNG 导出：雷达图、条形图
-- 数据导出：CSV、JSON
-- 一键完整数据包导出：ZIP，包含报告摘要、JSON、CSV、雷达图 PNG、条形图 PNG
-- 本地计算，不主动上传用户数据
+  [English](README.md) · [简体中文](README_CN.md)
 
-## 重要合规说明
+  <p>
+    <img alt="Pure Frontend" src="https://img.shields.io/badge/Pure%20Frontend-HTML%20%7C%20CSS%20%7C%20JS-22D3EE?style=for-the-badge&labelColor=0F172A">
+    <img alt="PDF Export" src="https://img.shields.io/badge/Export-PDF%20%7C%20PNG%20%7C%20CSV%20%7C%20JSON-A78BFA?style=for-the-badge&labelColor=0F172A">
+    <img alt="No Backend" src="https://img.shields.io/badge/Backend-Not%20Required-34D399?style=for-the-badge&labelColor=0F172A">
+    <img alt="GitHub Pages" src="https://img.shields.io/badge/Deploy-GitHub%20Pages-F8FAFC?style=for-the-badge&labelColor=0F172A&color=64748B">
+  </p>
 
-本项目内置的是原创演示题库，不是 SCL-90/SCL-90-R 官方题项。若你要以“SCL-90/SCL-90-R”名义商用，应先取得合法授权，并替换：
+  **A polished, local-first, web-based psychological self-assessment experience with instant scoring, visual analytics, detailed dimension explanations, and downloadable reports.**
 
-1. `app.js` 中的 `DEMO_QUESTION_BANK`
-2. `DIMENSIONS` 和题目维度映射
-3. 量表常模、分界值、报告解释规则
-4. 隐私政策、用户协议、危机提示和未成年人规则
+  [Live Demo](#live-demo) · [Features](#key-features) · [Quick Start](#quick-start) · [GitHub Pages](#deploy-to-github-pages) · [Commercial Notes](#commercial-use-notes)
+</div>
 
-## 本地运行
+---
 
-直接双击 `index.html` 即可运行。
+## Overview
 
-默认访问码配置在 `app.js` 的 `CONFIG.accessCode` 中。为了避免售卖页面泄露访问码，首页不会展示具体访问码。
+**MindScope 90** is a browser-based mental health self-assessment platform designed for lightweight online delivery, report generation, and commercial pilot testing. It provides a complete front-end experience: access-code entry, informed consent, 90-item assessment flow, automated scoring, visual charts, dimension-level interpretation, and multi-format export.
 
-## 修改访问码
+The project is intentionally built as a **static web app**. It can run locally, be deployed to GitHub Pages, or be embedded into a larger H5 / mini-program workflow later.
 
-打开 `app.js`，修改：
+> **Important:** This project is a self-assessment and report-generation interface. It is not a medical diagnostic tool, not a clinical decision system, and not a substitute for qualified mental health professionals.
+
+---
+
+## Key Features
+
+| Area | What it does |
+| --- | --- |
+| **Assessment Flow** | 90-item questionnaire experience with grouped dimensions, required-answer validation, progress tracking, and clean interaction design. |
+| **Access Control** | Simple front-end access-code gate for demos, pilots, and manual paid distribution. |
+| **Result Dashboard** | Total score, mean score, positive-item count, positive-symptom mean, dimension ranking, and visual summary. |
+| **Dimension Explanations** | Each indicator includes an expandable explanation covering meaning, common signs, self-care suggestions, and when to seek professional help. |
+| **Visual Analytics** | Radar chart and bar chart for quick comparison across dimensions. |
+| **Report Export** | Download PDF report, chart PNG files, CSV result table, JSON raw data, and a complete ZIP export package. |
+| **Local-first Privacy** | No server is required by default. The assessment can be completed and exported entirely in the user's browser. |
+| **Deployment Ready** | Works with GitHub Pages, Cloudflare Pages, Netlify, Vercel static hosting, or any ordinary static web server. |
+
+---
+
+## Live Demo
+
+After deploying this repository with GitHub Pages, your live URL will look like this:
+
+```text
+https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY_NAME/
+```
+
+Example:
+
+```text
+https://luzimu.github.io/mental-test/
+```
+
+You can convert the final URL into a QR code and share it with users.
+
+---
+
+## Project Structure
+
+```text
+.
+├── index.html              # Main assessment page
+├── styles.css              # Visual design and responsive layout
+├── app.js                  # Assessment logic, scoring, charts, exports
+├── README.md               # English README
+├── README_CN.md            # Chinese README
+└── assets/
+    └── mindscope90-hero.svg # README hero banner
+```
+
+---
+
+## Quick Start
+
+### 1. Download or clone the project
+
+```bash
+git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME.git
+cd YOUR_REPOSITORY_NAME
+```
+
+### 2. Open locally
+
+You can open the project directly in a browser:
+
+```text
+index.html
+```
+
+For a cleaner local preview, use any static server:
+
+```bash
+python -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+---
+
+## Configuration
+
+Open `app.js` and update the configuration block:
 
 ```js
 const CONFIG = {
-  accessCode: "你的访问码"
-}
+  appName: "MindScope 90",
+  accessCode: "SCL2026"
+};
 ```
 
-纯前端访问码只能做体验验证，不能防止用户查看源码。正式售卖时建议改成服务端一次性授权码、订单校验或小程序支付后解锁。
+For a paid or private pilot, replace `SCL2026` with your own access code.
 
-## PDF 和 ZIP 导出说明
+> Front-end access codes are suitable for demos and low-risk manual sales only. For serious commercial use, use a server-side one-user-one-code verification system.
 
-为了让浏览器直接生成 PDF、ZIP 和截图，本项目在 `index.html` 中引入了三个免费 CDN 组件：
+---
 
-- `html2canvas`：把报告页截图成图片
-- `jspdf`：生成 PDF
-- `jszip`：打包完整数据包
+## Deploy to GitHub Pages
 
-如果用户设备无法访问 CDN，PDF 按钮会自动退回到浏览器打印窗口，用户仍可选择“另存为 PDF”；ZIP 按钮会退回为分别下载 JSON、CSV 和图表 PNG。
+1. Create a new GitHub repository.
+2. Upload `index.html`, `styles.css`, `app.js`, `README.md`, `README_CN.md`, and the `assets/` folder.
+3. Go to **Settings → Pages**.
+4. Set **Source** to `Deploy from a branch`.
+5. Select branch `main` and folder `/root`.
+6. Save and wait for the deployment URL.
 
-## 零成本部署方式
+Your site will usually be available within a few minutes.
 
-### 方式一：GitHub Pages
+---
 
-1. 新建 GitHub 仓库
-2. 上传 `index.html`、`styles.css`、`app.js`
-3. 进入 Settings → Pages → Deploy from branch
-4. 获得一个免费的 H5 地址
+## Report Exports
 
-### 方式二：Cloudflare Pages
+MindScope 90 supports multiple export formats:
 
-1. 注册 Cloudflare
-2. Pages → Create project
-3. 上传本项目文件夹
-4. 获得免费的 H5 地址
+- **PDF report**: full assessment summary and dimension explanations
+- **Radar chart PNG**: visual comparison of all indicators
+- **Bar chart PNG**: ranked dimension score view
+- **CSV table**: dimension-level structured results
+- **JSON file**: complete result object for future analysis
+- **ZIP package**: all report data and visual assets in one archive
 
-## 商用建议
+---
 
-纯前端版本适合做引流页、体验版、内部测评或售卖后的交付页面。若要真正防盗版、支付后解锁、保存订单和用户报告，需要后端接口，至少包含：
+## Commercial Use Notes
 
-- 订单表
-- 支付回调
-- 授权码生成与核销
-- 报告记录表
-- 管理后台
-- 数据加密与删除机制
+This project is suitable for early-stage product validation, pilot distribution, and paid H5 testing. Recommended commercial workflow:
 
-## 小程序迁移思路
+```text
+User scans QR code
+↓
+User enters access code
+↓
+User completes the assessment
+↓
+System generates report
+↓
+User downloads PDF / charts / data package
+```
 
-- `index.html` 对应小程序 `wxml`
-- `styles.css` 对应 `wxss`
-- `app.js` 的评分逻辑可复用到小程序 `page.js`
-- PDF 生成在小程序端较麻烦，通常建议后端生成 PDF，或在 H5 WebView 中完成
-- 若使用微信支付，需要小程序认证、商户号和支付回调服务端
+For formal commercial operation, consider adding:
 
-## 医疗与心理安全边界
+- Server-side order verification
+- One-user-one-code access management
+- Payment integration
+- Report history storage
+- Privacy policy and user agreement
+- Data deletion mechanism
+- Emergency support and professional referral notice
+- Licensed scale content and validated scoring rules when using third-party psychological instruments
 
-本系统只能作为心理健康筛查工具，不能作为医学诊断、处方、治疗或危机干预工具。报告页必须保留非诊断声明和危机提示。
+---
+
+## Compliance & Safety Disclaimer
+
+MindScope 90 is intended for psychological self-reflection, educational use, and non-diagnostic screening only. The generated result should not be interpreted as a medical diagnosis, treatment recommendation, or emergency intervention plan.
+
+If a user reports severe distress, self-harm thoughts, or immediate danger, they should contact local emergency services or qualified mental health professionals immediately.
+
+If you plan to commercialize a product based on a third-party psychological scale, verify the licensing, copyright, scoring rules, norms, and professional-use requirements before release.
+
+---
+
+## Roadmap
+
+- [ ] Add bilingual UI switching inside the web app
+- [ ] Add one-user-one-code backend verification
+- [ ] Add order/payment integration
+- [ ] Add report history and encrypted storage
+- [ ] Add admin dashboard for access-code management
+- [ ] Add mini-program version
+
+---
+
+## License
+
+This repository is provided as a front-end assessment system template. Please choose an appropriate license before public release and ensure that any psychological scale content used in production is legally authorized.
