@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>心理健康自评系统｜SCL-90 兼容框架</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <main class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Mental Health Screening</p>
+        <h1>心理健康自评系统</h1>
+        <p class="subtitle">SCL-90 商用兼容框架 · 前端本地评分 · 可迁移至 H5 / 小程序</p>
+      </div>
+      <div class="hero-card">
+        <span class="hero-number">90</span>
+        <span>题症状自评</span>
+      </div>
+    </header>
+
+    <section id="verifyView" class="panel view active">
+      <div class="two-col">
+        <div>
+          <span class="badge">系统验证</span>
+          <h2>请输入测评访问码</h2>
+          <p class="muted">演示版本使用前端访问码进行体验验证。正式售卖时请接入服务端订单校验、微信支付或知识付费平台。</p>
+          <div class="notice warning">
+            <strong>重要提示：</strong>本系统仅用于心理健康筛查与自我觉察，不提供医学诊断、治疗建议或危机干预服务。
+          </div>
+        </div>
+        <form id="verifyForm" class="verify-box">
+          <label for="accessCode">访问码</label>
+          <input id="accessCode" type="password" placeholder="请输入你购买或领取的访问码" autocomplete="one-time-code" />
+          <button type="submit" class="primary-btn">进入测评</button>
+          <p class="hint">访问码用于验证测评资格，正式售卖时建议改为服务端一次性核销。</p>
+        </form>
+      </div>
+    </section>
+
+    <section id="consentView" class="panel view">
+      <span class="badge">知情同意</span>
+      <h2>开始前请确认</h2>
+      <div class="consent-grid">
+        <div class="consent-item">测评结果只反映近一段时间的主观感受，不等同于临床诊断。</div>
+        <div class="consent-item">本演示版不上传、不保存个人数据，结果仅在当前浏览器本地计算。</div>
+        <div class="consent-item">若出现持续痛苦、自伤或伤人想法，请立即联系身边可信任的人或当地急救/心理危机热线。</div>
+        <div class="consent-item">商用前请替换为已授权量表题目、常模、解释规则，并完善隐私政策。</div>
+      </div>
+      <label class="check-line">
+        <input id="agreeConsent" type="checkbox" />
+        <span>我已阅读并理解以上说明，愿意继续进行自评。</span>
+      </label>
+      <div class="actions">
+        <button id="startBtn" class="primary-btn" disabled>开始测评</button>
+      </div>
+    </section>
+
+    <section id="surveyView" class="panel view">
+      <div class="survey-top">
+        <div>
+          <span class="badge">正式测评</span>
+          <h2 id="pageTitle">第 1 组题目</h2>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span id="progressText">0 / 90</span><span id="pageText">第 1 / 9 页</span></div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+      </div>
+      <div id="questionList" class="question-list"></div>
+      <div class="actions sticky-actions">
+        <button id="prevBtn" class="ghost-btn">上一页</button>
+        <button id="nextBtn" class="primary-btn">下一页</button>
+      </div>
+    </section>
+
+    <section id="resultView" class="panel view">
+      <div class="result-head">
+        <div>
+          <span class="badge">测评报告</span>
+          <h2>心理健康自评结果</h2>
+          <p class="muted">以下结果基于本地评分规则自动生成，仅用于筛查与自我觉察。</p>
+        </div>
+        <div id="riskPill" class="risk-pill">--</div>
+      </div>
+
+      <div class="score-cards">
+        <div class="score-card"><span>总分</span><strong id="totalScore">--</strong></div>
+        <div class="score-card"><span>总均分</span><strong id="meanScore">--</strong></div>
+        <div class="score-card"><span>阳性项目数</span><strong id="positiveCount">--</strong></div>
+        <div class="score-card"><span>阳性症状均分</span><strong id="psdiScore">--</strong></div>
+      </div>
+
+      <div class="result-grid">
+        <section class="report-card">
+          <h3>维度雷达图</h3>
+          <div id="radarChart" class="radar"></div>
+        </section>
+        <section class="report-card">
+          <h3>维度得分排序</h3>
+          <div id="barChart" class="bars"></div>
+        </section>
+      </div>
+
+      <section class="report-card">
+        <h3>结果解释</h3>
+        <p id="interpretation" class="interpretation"></p>
+        <div id="dimensionSummary" class="dimension-summary"></div>
+      </section>
+
+      <section class="report-card" id="dimensionDetailSection">
+        <div class="section-title-row">
+          <div>
+            <h3>十项指标详细解释</h3>
+            <p class="muted small-note">点击每一项的“进一步解释”，可查看该指标的含义、常见表现、调节建议和何时需要寻求专业帮助。导出 PDF 时会自动展开全部内容。</p>
+          </div>
+          <button id="expandAllBtn" class="ghost-btn mini-btn" type="button">展开全部</button>
+        </div>
+        <div id="dimensionDetails" class="dimension-details"></div>
+      </section>
+
+      <section class="report-card safety-card">
+        <h3>安全提示</h3>
+        <p>若你当前存在强烈绝望感、自伤或伤人想法，请不要独自承受，立即联系身边可信任的人、当地急救电话或专业心理危机干预资源。线上自评不能替代精神科医生、心理治疗师或心理咨询师的面对面评估。</p>
+      </section>
+
+      <div class="actions wrap-actions">
+        <button id="copyBtn" class="ghost-btn">复制报告摘要</button>
+        <button id="downloadPdfBtn" class="ghost-btn">下载 PDF 报告</button>
+        <button id="downloadZipBtn" class="ghost-btn">下载完整数据包</button>
+        <button id="downloadRadarBtn" class="ghost-btn">下载雷达图 PNG</button>
+        <button id="downloadBarBtn" class="ghost-btn">下载条形图 PNG</button>
+        <button id="downloadCsvBtn" class="ghost-btn">下载 CSV 数据</button>
+        <button id="downloadJsonBtn" class="ghost-btn">下载 JSON 数据</button>
+        <button id="printBtn" class="ghost-btn">打印 / 另存 PDF</button>
+        <button id="restartBtn" class="primary-btn">重新测评</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>© 2026 心理健康自评系统演示版</span>
+      <span>不采集个人数据 · 本地计算 · 商用请完成授权与合规审查</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
