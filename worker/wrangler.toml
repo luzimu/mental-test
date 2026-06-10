@@ -1,0 +1,16 @@
+name = "scl90-access-code-worker"
+main = "worker.js"
+compatibility_date = "2026-06-01"
+
+# 正式部署前：
+# 1) npx wrangler kv namespace create ACCESS_CODES
+# 2) 将输出的 id 填入下方
+# 3) npx wrangler secret put ADMIN_TOKEN
+# 4) 如果只允许你的 GitHub Pages 域名访问，可设置 ALLOWED_ORIGIN
+
+[vars]
+ALLOWED_ORIGIN = "*"
+
+[[kv_namespaces]]
+binding = "ACCESS_CODES"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"

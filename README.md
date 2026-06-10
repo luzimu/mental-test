@@ -1,66 +1,42 @@
 <div align="center">
   <img src="assets/mindscope90-hero.svg" alt="MindScope 90 hero banner" width="100%" />
 
-  # MindScope 90
+  # SCL-90 Online Assessment System
 
-  ### Smart Mental Health Self-Assessment Platform
+  ### Licensed Symptom Checklist-90 Web Assessment · PDF Report · One-Time Access Codes
 
   [English](README.md) · [简体中文](README_CN.md)
 
   <p>
-    <img alt="Pure Frontend" src="https://img.shields.io/badge/Pure%20Frontend-HTML%20%7C%20CSS%20%7C%20JS-22D3EE?style=for-the-badge&labelColor=0F172A">
-    <img alt="PDF Export" src="https://img.shields.io/badge/Export-PDF%20%7C%20PNG%20%7C%20CSV%20%7C%20JSON-A78BFA?style=for-the-badge&labelColor=0F172A">
-    <img alt="No Backend" src="https://img.shields.io/badge/Backend-Not%20Required-34D399?style=for-the-badge&labelColor=0F172A">
-    <img alt="GitHub Pages" src="https://img.shields.io/badge/Deploy-GitHub%20Pages-F8FAFC?style=for-the-badge&labelColor=0F172A&color=64748B">
+    <img alt="SCL-90" src="https://img.shields.io/badge/Scale-SCL--90-22D3EE?style=for-the-badge&labelColor=0F172A">
+    <img alt="Scoring" src="https://img.shields.io/badge/Scoring-GSI%20%7C%20PST%20%7C%20PSDI-A78BFA?style=for-the-badge&labelColor=0F172A">
+    <img alt="Export" src="https://img.shields.io/badge/Export-PDF%20%7C%20PNG%20%7C%20CSV%20%7C%20JSON-34D399?style=for-the-badge&labelColor=0F172A">
+    <img alt="Access Codes" src="https://img.shields.io/badge/Access-One--Time%20Codes-F59E0B?style=for-the-badge&labelColor=0F172A">
   </p>
 
-  **A polished, local-first, web-based psychological self-assessment experience with instant scoring, visual analytics, detailed dimension explanations, and downloadable reports.**
-
-  [Live Demo](#live-demo) · [Features](#key-features) · [Quick Start](#quick-start) · [GitHub Pages](#deploy-to-github-pages) · [Commercial Notes](#commercial-use-notes)
+  **A polished web-based SCL-90 self-report assessment system with authorized question content, automated scoring, visual analytics, detailed dimension interpretation, downloadable reports, and optional one-time access-code verification for paid distribution.**
 </div>
 
 ---
 
 ## Overview
 
-**MindScope 90** is a browser-based mental health self-assessment platform designed for lightweight online delivery, report generation, and commercial pilot testing. It provides a complete front-end experience: access-code entry, informed consent, 90-item assessment flow, automated scoring, visual charts, dimension-level interpretation, and multi-format export.
+This project is a deployable SCL-90 web assessment system. It includes:
 
-The project is intentionally built as a **static web app**. It can run locally, be deployed to GitHub Pages, or be embedded into a larger H5 / mini-program workflow later.
+- 90-item SCL-90 questionnaire flow
+- 1–5 response scale
+- required-answer validation
+- total score and mean score
+- GSI, PST, and PSDI global indices
+- 10-factor dimension scoring, including additional sleep/appetite items
+- expandable clinical-style dimension explanations
+- PDF report export
+- chart PNG export
+- CSV / JSON / ZIP data export
+- optional Cloudflare Worker + KV one-time access-code backend
+- standalone admin page for generating, importing, listing, and exporting access codes
 
-> **Important:** This project is a self-assessment and report-generation interface. It is not a medical diagnostic tool, not a clinical decision system, and not a substitute for qualified mental health professionals.
-
----
-
-## Key Features
-
-| Area | What it does |
-| --- | --- |
-| **Assessment Flow** | 90-item questionnaire experience with grouped dimensions, required-answer validation, progress tracking, and clean interaction design. |
-| **Access Control** | Simple front-end access-code gate for demos, pilots, and manual paid distribution. |
-| **Result Dashboard** | Total score, mean score, positive-item count, positive-symptom mean, dimension ranking, and visual summary. |
-| **Dimension Explanations** | Each indicator includes an expandable explanation covering meaning, common signs, self-care suggestions, and when to seek professional help. |
-| **Visual Analytics** | Radar chart and bar chart for quick comparison across dimensions. |
-| **Report Export** | Download PDF report, chart PNG files, CSV result table, JSON raw data, and a complete ZIP export package. |
-| **Local-first Privacy** | No server is required by default. The assessment can be completed and exported entirely in the user's browser. |
-| **Deployment Ready** | Works with GitHub Pages, Cloudflare Pages, Netlify, Vercel static hosting, or any ordinary static web server. |
-
----
-
-## Live Demo
-
-After deploying this repository with GitHub Pages, your live URL will look like this:
-
-```text
-https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY_NAME/
-```
-
-Example:
-
-```text
-https://luzimu.github.io/mental-test/
-```
-
-You can convert the final URL into a QR code and share it with users.
+> The system is intended for psychological screening and self-reflection. It is not a medical diagnosis, treatment recommendation, or emergency intervention service.
 
 ---
 
@@ -68,141 +44,205 @@ You can convert the final URL into a QR code and share it with users.
 
 ```text
 .
-├── index.html              # Main assessment page
-├── styles.css              # Visual design and responsive layout
-├── app.js                  # Assessment logic, scoring, charts, exports
-├── README.md               # English README
-├── README_CN.md            # Chinese README
-└── assets/
-    └── mindscope90-hero.svg # README hero banner
+├── index.html                  # Main assessment page
+├── styles.css                  # UI design and responsive layout
+├── app.js                      # SCL-90 questions, scoring, charts, report export, access-code logic
+├── admin.html                  # Access-code management panel
+├── README.md                   # English README
+├── README_CN.md                # Chinese README
+├── assets/
+│   └── mindscope90-hero.svg    # README hero banner
+└── worker/
+    ├── worker.js               # Cloudflare Worker backend for one-time codes
+    └── wrangler.toml           # Worker deployment configuration
 ```
 
 ---
 
-## Quick Start
+## Scoring Notes
 
-### 1. Download or clone the project
+The web app outputs both common Chinese raw-score indicators and international SCL-90-R style global indices.
 
-```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME.git
-cd YOUR_REPOSITORY_NAME
+| Indicator | Meaning |
+| --- | --- |
+| Total score | Sum of all 90 raw item scores, using the 1–5 response system. |
+| Mean score | Total score divided by 90. |
+| Positive item count / PST | Number of items scored above 1. |
+| GSI | Global Severity Index, computed after converting raw 1–5 responses to 0–4 scores. |
+| PSDI | Positive Symptom Distress Index, the average intensity among endorsed symptoms. |
+| Factor score | Mean score of items belonging to each SCL-90 factor. |
+
+The default screening rule is configurable in `app.js`:
+
+```js
+screeningRules: {
+  totalPositiveCutoff: 160,
+  positiveItemCutoff: 43,
+  factorMeanCutoff: 2
+}
 ```
 
-### 2. Open locally
-
-You can open the project directly in a browser:
-
-```text
-index.html
-```
-
-For a cleaner local preview, use any static server:
-
-```bash
-python -m http.server 8000
-```
-
-Then open:
-
-```text
-http://localhost:8000
-```
+For formal clinical or institutional use, replace or extend these rules with the norm tables and interpretation standards from your authorized manual.
 
 ---
 
-## Configuration
+## Local Demo Mode
 
-Open `app.js` and update the configuration block:
+By default, the project runs in local demo mode:
 
 ```js
 const CONFIG = {
-  appName: "MindScope 90",
-  accessCode: "SCL2026"
+  accessMode: "local",
+  localAccessCode: "CHANGE_ME_LOCAL_CODE"
 };
 ```
 
-For a paid or private pilot, replace `SCL2026` with your own access code.
-
-> Front-end access codes are suitable for demos and low-risk manual sales only. For serious commercial use, use a server-side one-user-one-code verification system.
+This is suitable only for testing. A local front-end access code can be seen by users who inspect the source code.
 
 ---
 
-## Deploy to GitHub Pages
+## One-Time Access-Code Mode
 
-1. Create a new GitHub repository.
-2. Upload `index.html`, `styles.css`, `app.js`, `README.md`, `README_CN.md`, and the `assets/` folder.
+For Taobao or paid QR-code distribution, use server-side verification:
+
+```js
+const CONFIG = {
+  accessMode: "api",
+  apiBase: "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev"
+};
+```
+
+After a user enters a valid code, the backend marks that code as `used`. The same code cannot be redeemed again.
+
+---
+
+## Deploy the Website to GitHub Pages
+
+1. Upload these files to your GitHub repository root:
+
+```text
+index.html
+styles.css
+app.js
+admin.html
+README.md
+README_CN.md
+assets/
+worker/
+```
+
+2. Open the repository on GitHub.
 3. Go to **Settings → Pages**.
 4. Set **Source** to `Deploy from a branch`.
 5. Select branch `main` and folder `/root`.
-6. Save and wait for the deployment URL.
+6. Wait for the live URL.
 
-Your site will usually be available within a few minutes.
-
----
-
-## Report Exports
-
-MindScope 90 supports multiple export formats:
-
-- **PDF report**: full assessment summary and dimension explanations
-- **Radar chart PNG**: visual comparison of all indicators
-- **Bar chart PNG**: ranked dimension score view
-- **CSV table**: dimension-level structured results
-- **JSON file**: complete result object for future analysis
-- **ZIP package**: all report data and visual assets in one archive
-
----
-
-## Commercial Use Notes
-
-This project is suitable for early-stage product validation, pilot distribution, and paid H5 testing. Recommended commercial workflow:
+Your site will look like:
 
 ```text
-User scans QR code
-↓
-User enters access code
-↓
-User completes the assessment
-↓
-System generates report
-↓
-User downloads PDF / charts / data package
+https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY_NAME/
 ```
 
-For formal commercial operation, consider adding:
+---
 
-- Server-side order verification
-- One-user-one-code access management
-- Payment integration
-- Report history storage
-- Privacy policy and user agreement
-- Data deletion mechanism
-- Emergency support and professional referral notice
-- Licensed scale content and validated scoring rules when using third-party psychological instruments
+## Deploy the Access-Code Backend with Cloudflare Workers
+
+### 1. Install Wrangler
+
+```bash
+npm install -g wrangler
+wrangler login
+```
+
+### 2. Create KV namespace
+
+```bash
+cd worker
+npx wrangler kv namespace create ACCESS_CODES
+```
+
+Copy the generated namespace ID into `worker/wrangler.toml`:
+
+```toml
+[[kv_namespaces]]
+binding = "ACCESS_CODES"
+id = "YOUR_KV_NAMESPACE_ID"
+```
+
+### 3. Set admin token
+
+```bash
+npx wrangler secret put ADMIN_TOKEN
+```
+
+Enter a strong private token. This token is required by `admin.html`.
+
+### 4. Deploy Worker
+
+```bash
+npx wrangler deploy
+```
+
+After deployment, update `app.js`:
+
+```js
+accessMode: "api",
+apiBase: "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev"
+```
 
 ---
 
-## Compliance & Safety Disclaimer
+## Use the Admin Panel
 
-MindScope 90 is intended for psychological self-reflection, educational use, and non-diagnostic screening only. The generated result should not be interpreted as a medical diagnosis, treatment recommendation, or emergency intervention plan.
+Open:
 
-If a user reports severe distress, self-harm thoughts, or immediate danger, they should contact local emergency services or qualified mental health professionals immediately.
+```text
+https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY_NAME/admin.html
+```
 
-If you plan to commercialize a product based on a third-party psychological scale, verify the licensing, copyright, scoring rules, norms, and professional-use requirements before release.
+Fill in:
+
+- Worker API URL
+- Admin Token
+
+Then you can:
+
+- generate access codes
+- import existing codes
+- list valid codes
+- list used codes
+- export access codes as CSV
+
+Do not share the Admin Token with users.
 
 ---
 
-## Roadmap
+## Taobao Workflow
 
-- [ ] Add bilingual UI switching inside the web app
-- [ ] Add one-user-one-code backend verification
-- [ ] Add order/payment integration
-- [ ] Add report history and encrypted storage
-- [ ] Add admin dashboard for access-code management
-- [ ] Add mini-program version
+```text
+Buyer places an order on Taobao
+↓
+You generate or copy one unused access code from admin.html
+↓
+Send the code to the buyer
+↓
+Buyer scans the GitHub Pages QR code
+↓
+Buyer enters the code
+↓
+Backend marks the code as used
+↓
+Buyer completes SCL-90 assessment and downloads PDF report
+```
 
 ---
 
-## License
+## Safety Disclaimer
 
-This repository is provided as a front-end assessment system template. Please choose an appropriate license before public release and ensure that any psychological scale content used in production is legally authorized.
+This system is not a diagnostic product. If the report identifies high distress, self-harm thoughts, harm-to-others impulses, psychotic-like experiences, or severe functional impairment, the user should contact qualified mental health professionals or local emergency services immediately.
+
+---
+
+## License and Scale Authorization
+
+This codebase is a technical implementation package. The question content, norm tables, scoring standards, commercial distribution rights, and professional-use requirements must be handled according to your own SCL-90 authorization documents and local regulatory obligations.

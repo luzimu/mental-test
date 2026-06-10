@@ -189,7 +189,7 @@ input[type="password"]:focus { border-color: var(--primary); box-shadow: 0 0 0 4
 .risk-low { background: var(--success); }
 .risk-mid { background: var(--warning); }
 .risk-high { background: var(--danger); }
-.score-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 18px 0; }
+.score-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 14px; margin: 18px 0; }
 .score-card {
   padding: 18px;
   border-radius: 20px;
@@ -213,6 +213,18 @@ input[type="password"]:focus { border-color: var(--primary); box-shadow: 0 0 0 4
 .bar-track { height: 13px; background: rgba(79,124,255,.12); border-radius: 999px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--primary), var(--primary-2)); }
 .bar-value { color: var(--muted); font-weight: 900; text-align: right; }
+
+.crisis-warning {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(230,75,93,.28);
+  background: rgba(230,75,93,.10);
+  color: #9f1d2d;
+  font-weight: 900;
+  line-height: 1.7;
+}
+
 .interpretation { line-height: 1.85; color: var(--text); }
 .dimension-summary { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .dimension-chip { padding: 10px 12px; border-radius: 999px; background: rgba(79,124,255,.10); color: var(--primary); font-weight: 900; }

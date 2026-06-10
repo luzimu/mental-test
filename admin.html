@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCL-90 访问码管理</title>
+  <style>
+    :root { --bg:#0b1020; --panel:#121a30; --line:#273453; --text:#eaf2ff; --muted:#9fb0d0; --primary:#22d3ee; --green:#34d399; --red:#fb7185; }
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;background:radial-gradient(circle at top,#152238,var(--bg));color:var(--text)}
+    main{width:min(1100px,calc(100% - 32px));margin:32px auto} h1{font-size:42px;margin:0 0 8px}.muted{color:var(--muted);line-height:1.7}.card{background:rgba(18,26,48,.86);border:1px solid var(--line);border-radius:22px;padding:20px;margin:16px 0;box-shadow:0 16px 50px rgba(0,0,0,.22)}
+    label{display:block;font-weight:800;margin:12px 0 8px} input,textarea,select{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:#0f172a;color:var(--text);outline:none} textarea{min-height:120px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}button{border:0;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#22d3ee,#818cf8);color:#07101f}.ghost{background:#0f172a;color:var(--text);border:1px solid var(--line)}
+    table{width:100%;border-collapse:collapse;font-size:14px} th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top} th{color:var(--muted)} .valid{color:var(--green);font-weight:900}.used{color:#fbbf24;font-weight:900}.disabled{color:var(--red);font-weight:900} .codebox{white-space:pre-wrap;background:#0f172a;border:1px solid var(--line);border-radius:14px;padding:12px;max-height:220px;overflow:auto} @media(max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:32px}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>SCL-90 访问码管理</h1>
+  <p class="muted">这个页面用于你自己管理淘宝售卖访问码。请不要把 Admin Token 发给用户；访问码列表由 Cloudflare Worker + KV 保存。</p>
+
+  <section class="card">
+    <h2>后台连接</h2>
+    <label>Worker API 地址</label>
+    <input id="apiBase" placeholder="https://scl90-access-code-worker.xxx.workers.dev" />
+    <label>Admin Token</label>
+    <input id="adminToken" type="password" placeholder="你在 Cloudflare 设置的 ADMIN_TOKEN" />
+    <div class="actions"><button id="saveConfig">保存到本机浏览器</button><button id="health" class="ghost">测试连接</button></div>
+  </section>
+
+  <section class="card">
+    <h2>生成一次性访问码</h2>
+    <div class="grid">
+      <div><label>数量</label><input id="count" type="number" min="1" max="500" value="20" /></div>
+      <div><label>前缀</label><input id="prefix" value="SCL90" /></div>
+      <div><label>批次</label><input id="batch" /></div>
+      <div><label>备注</label><input id="note" placeholder="淘宝订单/活动批次" /></div>
+    </div>
+    <div class="actions"><button id="generate">生成访问码</button><button id="copyGenerated" class="ghost">复制生成结果</button></div>
+    <div id="generated" class="codebox"></div>
+  </section>
+
+  <section class="card">
+    <h2>导入访问码</h2>
+    <p class="muted">一行一个访问码，适合你自己提前在 Excel 里生成后批量导入。</p>
+    <textarea id="importCodes" placeholder="SCL90-AAAA-BBBB\nSCL90-CCCC-DDDD"></textarea>
+    <div class="actions"><button id="importBtn">批量导入</button></div>
+  </section>
+
+  <section class="card">
+    <h2>查看有效/已使用访问码</h2>
+    <div class="grid">
+      <div><label>状态</label><select id="status"><option value="valid">有效</option><option value="used">已使用</option><option value="disabled">已停用</option><option value="all">全部</option></select></div>
+      <div><label>前缀筛选</label><input id="listPrefix" placeholder="SCL90" /></div>
+    </div>
+    <div class="actions"><button id="listCodes">刷新列表</button><button id="copyValid" class="ghost">复制当前列表访问码</button><button id="exportCsv" class="ghost">导出CSV</button></div>
+    <p id="stats" class="muted"></p>
+    <div style="overflow:auto"><table><thead><tr><th>访问码</th><th>状态</th><th>批次</th><th>创建时间</th><th>使用时间</th><th>备注</th></tr></thead><tbody id="codeRows"></tbody></table></div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let currentCodes = [];
+function apiBase(){ return $("apiBase").value.trim().replace(/\/$/, ""); }
+function token(){ return $("adminToken").value.trim(); }
+function headers(){ return { "Content-Type":"application/json", "Authorization":"Bearer " + token() }; }
+function toast(msg){ alert(msg); }
+async function request(path, opts={}){
+  const res = await fetch(apiBase()+path, { ...opts, headers: { ...headers(), ...(opts.headers||{}) } });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok || data.ok===false) throw new Error(data.message || "请求失败");
+  return data;
+}
+function saveLocal(){ localStorage.setItem("scl90_admin_api", apiBase()); localStorage.setItem("scl90_admin_token", token()); toast("已保存到本机浏览器"); }
+function loadLocal(){ $("apiBase").value=localStorage.getItem("scl90_admin_api")||""; $("adminToken").value=localStorage.getItem("scl90_admin_token")||""; $("batch").value=new Date().toISOString().slice(0,10); }
+function toCsv(rows){ return "\ufeff"+rows.map(r=>r.map(c=>`"${String(c??"").replaceAll('"','""')}"`).join(",")).join("\n"); }
+function download(content, filename){ const blob=new Blob([content],{type:"text/csv;charset=utf-8"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+$("saveConfig").onclick=saveLocal;
+$("health").onclick=async()=>{ try{ const d=await fetch(apiBase()+"/health").then(r=>r.json()); toast("连接成功："+JSON.stringify(d)); }catch(e){ toast("连接失败："+e.message); } };
+$("generate").onclick=async()=>{ try{ const data=await request("/admin/generate",{method:"POST",body:JSON.stringify({count:Number($("count").value),prefix:$("prefix").value,batch:$("batch").value,note:$("note").value})}); $("generated").textContent=data.codes.join("\n"); toast(`已生成 ${data.count} 个访问码`); }catch(e){ toast(e.message); } };
+$("copyGenerated").onclick=()=>navigator.clipboard.writeText($("generated").textContent||"");
+$("importBtn").onclick=async()=>{ try{ const codes=$("importCodes").value.split(/\s+/).filter(Boolean); const data=await request("/admin/import",{method:"POST",body:JSON.stringify({codes,batch:$("batch").value,note:$("note").value||"imported"})}); toast(`已导入 ${data.count} 个访问码`); }catch(e){ toast(e.message); } };
+$("listCodes").onclick=async()=>{ try{ const status=$("status").value; const prefix=$("listPrefix").value; const data=await request(`/admin/codes?status=${encodeURIComponent(status)}&prefix=${encodeURIComponent(prefix)}&limit=1000`,{method:"GET"}); currentCodes=data.codes||[]; $("stats").textContent=`共 ${data.count} 条；统计：`+JSON.stringify(data.stats||{}); $("codeRows").innerHTML=currentCodes.map(c=>`<tr><td>${c.code}</td><td class="${c.status}">${c.status}</td><td>${c.batch||""}</td><td>${c.createdAt||""}</td><td>${c.usedAt||""}</td><td>${c.note||""}</td></tr>`).join(""); }catch(e){ toast(e.message); } };
+$("copyValid").onclick=()=>navigator.clipboard.writeText(currentCodes.map(c=>c.code).join("\n"));
+$("exportCsv").onclick=()=>download(toCsv([["code","status","batch","createdAt","usedAt","note"],...currentCodes.map(c=>[c.code,c.status,c.batch,c.createdAt,c.usedAt,c.note])]),"scl90-access-codes.csv");
+loadLocal();
+</script>
+</body>
+</html>

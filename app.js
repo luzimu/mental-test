@@ -1,222 +1,237 @@
 /**
- * 心理健康自评系统：SCL-90 商用兼容前端框架
+ * SCL-90 症状自评量表前端系统（授权题库版）
  * ------------------------------------------------------
- * 重要：本文件内置的是“原创演示题库”，不是 SCL-90/SCL-90-R 官方题项。
- * 如果要商用 SCL-90/SCL-90-R，请取得量表题项、常模和解释规则授权后，替换 QUESTIONS 与 DIMENSIONS。
+ * 说明：本版本已替换为用户提供并声明已获得正规授权的 SCL-90 中文题项。
+ * 评分同时输出中文 1-5 原始分体系与国际常用 0-4 转换指标：GSI、PST、PSDI。
+ * 本系统用于心理健康筛查与自我觉察，不构成医学诊断、治疗建议或危机干预。
  */
 
 const CONFIG = {
-  appName: "心理健康自评系统",
-  accessCode: "SCL2026",
+  appName: "SCL-90 症状自评量表",
+  // GitHub Pages 只能托管静态页面，无法安全实现“一码一次”。
+  // 正式淘宝售卖请将 accessMode 设为 "api"，并把 apiBase 改成 Cloudflare Worker 地址。
+  accessMode: "local", // "local" 用于本地演示；"api" 用于服务端一次性核销
+  localAccessCode: "CHANGE_ME_LOCAL_CODE",
+  apiBase: "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev",
   pageSize: 10,
-  scaleMax: 4,
+  scaleMin: 1,
+  scaleMax: 5,
+  normalizedScaleMax: 4,
   optionLabels: [
-    { value: 0, label: "没有", desc: "0" },
-    { value: 1, label: "很轻", desc: "1" },
-    { value: 2, label: "中等", desc: "2" },
-    { value: 3, label: "偏重", desc: "3" },
-    { value: 4, label: "严重", desc: "4" }
-  ]
+    { value: 1, label: "没有", desc: "1" },
+    { value: 2, label: "很轻", desc: "2" },
+    { value: 3, label: "中等", desc: "3" },
+    { value: 4, label: "偏重", desc: "4" },
+    { value: 5, label: "严重", desc: "5" }
+  ],
+  screeningRules: {
+    totalPositiveCutoff: 160,
+    positiveItemCutoff: 43,
+    factorMeanCutoff: 2
+  }
 };
 
 const DIMENSIONS = [
   { key: "som", name: "躯体化", short: "躯体" },
-  { key: "ocd", name: "强迫倾向", short: "强迫" },
-  { key: "inter", name: "人际敏感", short: "人际" },
-  { key: "dep", name: "抑郁情绪", short: "抑郁" },
-  { key: "anx", name: "焦虑情绪", short: "焦虑" },
-  { key: "host", name: "敌对情绪", short: "敌对" },
-  { key: "phob", name: "恐怖/回避", short: "恐怖" },
-  { key: "para", name: "偏执观念", short: "偏执" },
-  { key: "psy", name: "精神病性体验", short: "精神性" },
-  { key: "other", name: "睡眠与其他", short: "其他" }
+  { key: "ocd", name: "强迫症状", short: "强迫" },
+  { key: "inter", name: "人际关系敏感", short: "人际" },
+  { key: "dep", name: "抑郁", short: "抑郁" },
+  { key: "anx", name: "焦虑", short: "焦虑" },
+  { key: "host", name: "敌对", short: "敌对" },
+  { key: "phob", name: "恐怖", short: "恐怖" },
+  { key: "para", name: "偏执", short: "偏执" },
+  { key: "psy", name: "精神病性", short: "精神性" },
+  { key: "other", name: "其他（睡眠/饮食）", short: "其他" }
 ];
 
+const DIMENSION_ITEM_MAP = {
+  som: [1, 4, 12, 27, 40, 42, 48, 49, 52, 53, 56, 58],
+  ocd: [3, 9, 10, 28, 38, 45, 46, 51, 55, 65],
+  inter: [6, 21, 34, 36, 37, 41, 61, 69, 73],
+  dep: [5, 14, 15, 20, 22, 26, 29, 30, 31, 32, 54, 71, 79],
+  anx: [2, 17, 23, 33, 39, 57, 72, 78, 80, 86],
+  host: [11, 24, 63, 67, 74, 81],
+  phob: [13, 25, 47, 50, 70, 75, 82],
+  para: [8, 18, 43, 68, 76, 83],
+  psy: [7, 16, 35, 62, 77, 84, 85, 87, 88, 90],
+  other: [19, 44, 59, 60, 64, 66, 89]
+};
 
+function findDimensionKey(itemId) {
+  for (const [key, ids] of Object.entries(DIMENSION_ITEM_MAP)) {
+    if (ids.includes(itemId)) return key;
+  }
+  return "other";
+}
 
 const DIMENSION_EXPLANATIONS = {
   som: {
-    meaning: "反映个体把压力、焦虑或疲劳体验为身体不适的程度，例如头痛、胸闷、胃肠不适、疲乏等。该指标升高不等于存在躯体疾病，也不排除真实身体问题。",
-    signs: "常见表现包括反复关注身体感受、轻微不适被放大、休息后仍疲惫、身体症状影响工作学习。",
-    advice: "建议先保证睡眠、规律饮食、适度运动，记录身体不适与压力事件的关系；若症状持续或明显加重，应优先进行医学检查。",
-    help: "若疼痛、胸闷、呼吸困难等症状明显，或已影响日常功能，应及时就医；若医学检查无明显异常但困扰持续，可寻求心理咨询。"
+    meaning: "该因子反映个体在近一周内体验到的身体化不适程度，包括疼痛、胸闷、胃肠不适、发麻、无力、冷热感等。临床解释时需要同时考虑真实躯体疾病、睡眠不足、压力反应和焦虑相关躯体唤醒。",
+    signs: "常见表现包括反复关注身体感受、身体不适影响工作学习、检查后仍担心健康问题，或在压力增大时身体症状明显加重。",
+    advice: "建议记录症状出现时间、持续时间、压力事件和睡眠情况；保持规律作息、适度运动和医学必要检查。若医学检查无明显异常但困扰持续，可考虑心理压力管理或心理咨询。",
+    help: "如胸痛、呼吸困难、昏倒、持续疼痛等症状明显，应优先就医；若身体不适与焦虑、恐惧或长期压力高度相关，也建议进行专业心理评估。"
   },
   ocd: {
-    meaning: "反映重复想法、重复确认、过度追求确定性或完美的倾向。分数升高通常提示心理能量被反复检查和反复思考消耗。",
-    signs: "常见表现包括反复检查门锁、文件、消息，难以停止某个念头，做事耗时明显增加，对细节错误高度焦虑。",
-    advice: "可以尝试设定检查次数上限、用清单替代反复确认、练习容忍不确定性，并把任务拆分为可完成的小步骤。",
-    help: "若重复行为每天占用大量时间，或明显影响学习、工作和关系，建议寻求专业心理咨询或精神科评估。"
+    meaning: "该因子反映强迫性思维和强迫性行为倾向，包括反复想法、反复检查、难以决策、过度追求准确与确定性等。高分通常提示心理资源被重复确认和内在冲突消耗。",
+    signs: "常见表现包括反复检查、做事很慢以确保正确、脑中有不必要想法盘旋、难以停止某个念头、必须重复清洗或计数。",
+    advice: "可尝试设定检查次数上限，用清单替代反复确认，逐步练习容忍不确定性，并将任务拆分为明确可完成的小步骤。",
+    help: "若重复想法或行为明显占用时间、造成痛苦，或影响学习、工作、人际关系，建议寻求临床心理师或精神科医生评估。"
   },
   inter: {
-    meaning: "反映在人际互动中对评价、拒绝、比较和关系变化的敏感程度。该维度升高通常与自我评价波动和社交压力有关。",
-    signs: "常见表现包括担心别人不喜欢自己、反复回想对话细节、害怕表达真实想法、在人群中不自在。",
-    advice: "建议练习区分事实与猜测，减少过度解读；从低压力社交开始，逐步增加表达和边界练习。",
-    help: "若因人际压力长期回避社交、亲密关系反复冲突，或自我价值感显著下降，可寻求专业支持。"
+    meaning: "该因子反映在人际互动中对评价、拒绝、比较和关系安全感的敏感程度。高分常与自我价值感波动、社交压力、羞怯感和被误解感相关。",
+    signs: "常见表现包括同异性相处不自在、容易受伤、感觉别人不理解或不喜欢自己、在人群中被关注时紧张、公共场合吃东西不舒服。",
+    advice: "建议区分事实与推测，减少对他人表情和语气的过度解读；从低压力社交场景开始练习表达、边界和自我接纳。",
+    help: "若人际敏感导致长期回避社交、亲密关系受损、明显孤立或价值感下降，建议进行专业心理咨询。"
   },
   dep: {
-    meaning: "反映低落、兴趣下降、无助感、价值感下降和动力不足等抑郁相关体验。该结果只提示情绪困扰水平，不构成抑郁症诊断。",
-    signs: "常见表现包括提不起兴趣、效率下降、悲观、空虚、回避交流、注意力和决策能力变差。",
-    advice: "建议保持基本作息，安排小而确定的行动，减少独处时间，记录情绪变化，并寻求稳定的社会支持。",
-    help: "若低落持续两周以上、明显影响生活，或出现自伤、自杀想法，应立即联系身边可信任的人和专业机构。"
+    meaning: "该因子反映抑郁相关体验，包括兴趣下降、精力下降、无望感、自责、自我价值下降、孤独和悲伤等。高分提示需要重点关注情绪、功能和安全风险，但不能单独作为抑郁症诊断。",
+    signs: "常见表现包括容易哭泣、对事物不感兴趣、感到孤独苦闷、前途无望、觉得自己没有价值、经常责怪自己或认为自己应受惩罚。",
+    advice: "建议先恢复基础节律：固定起床时间、轻量运动、减少独处、建立日常任务清单，并尽量与可信任的人保持联系。",
+    help: "若低落、无望或自责持续两周以上，或出现结束生命、死亡相关想法，应立即联系身边可信任的人和专业危机干预/医疗资源。"
   },
   anx: {
-    meaning: "反映紧张、担忧、坐立不安、过度预期负面结果等焦虑体验。分数升高说明当前压力系统可能处于较高唤醒状态。",
-    signs: "常见表现包括心慌、肌肉紧绷、反复担心、难以放松、对不确定事件过度准备。",
-    advice: "建议进行腹式呼吸、渐进式肌肉放松，限制反复搜索和确认，把担心写成问题并拆解可行动步骤。",
-    help: "若焦虑伴随惊恐发作、失眠、明显回避，或影响工作学习，应寻求专业评估。"
+    meaning: "该因子反映焦虑和高唤醒状态，包括紧张、害怕、惊恐、心跳加快、发抖、坐立不安等。高分提示个体近期压力系统可能处于持续警觉状态。",
+    signs: "常见表现包括神经过敏、心中不踏实、突然害怕、过分担忧、心跳厉害、紧张或容易紧张、坐立不安。",
+    advice: "建议练习腹式呼吸、渐进式肌肉放松和正念 grounding；把担忧写成具体问题，区分可控制事项与不可控制事项。",
+    help: "若焦虑伴随惊恐发作、持续失眠、明显回避或功能受损，建议寻求专业心理治疗或精神科评估。"
   },
   host: {
-    meaning: "反映烦躁、愤怒、敌意、攻击冲动和冲突后的恢复困难。该指标升高常与长期压力、睡眠不足或关系压力有关。",
-    signs: "常见表现包括易怒、不耐烦、争辩冲动、对他人意图更消极、冲突后长时间难以平复。",
-    advice: "建议在冲突前暂停回应，使用延迟表达、运动释放和睡眠修复；把愤怒背后的需求具体写出来。",
-    help: "若愤怒导致伤害自己或他人、破坏关系或出现失控行为，应尽快寻求专业帮助。"
+    meaning: "该因子反映烦躁、愤怒、冲动、争论和攻击性表达倾向。高分常与长期压力、睡眠不足、挫败感和关系冲突有关。",
+    signs: "常见表现包括容易激动、不能控制地大发脾气、想打人或伤害他人、想摔坏东西、经常与人争论、大叫或摔东西。",
+    advice: "建议在冲突中先暂停回应，采用离开现场、深呼吸、运动释放和延迟表达；事后用文字梳理愤怒背后的需求、边界和事实。",
+    help: "若出现伤害自己或他人的冲动、破坏行为或失控风险，应立即寻求现实支持和专业帮助。"
   },
   phob: {
-    meaning: "反映对特定场景、对象或公共情境的恐惧与回避程度。分数升高提示回避行为可能正在缩小活动范围。",
-    signs: "常见表现包括害怕人多、封闭、陌生环境，提前担心外出，因害怕不适而减少行动。",
-    advice: "建议记录回避场景，按难度建立逐级暴露清单，从低强度场景开始练习，而不是一次性强迫自己面对。",
-    help: "若恐惧导致无法正常上班、上学、出行或社交，应寻求心理治疗或精神科评估。"
+    meaning: "该因子反映对特定场所、交通工具、独处、公共场合或人多环境的恐惧与回避。高分提示回避行为可能正在限制生活半径和功能。",
+    signs: "常见表现包括害怕空旷场所或街道、怕单独出门、怕乘公共交通、因害怕而避开某些活动、在人多场所不自在、害怕公共场合昏倒。",
+    advice: "建议建立分级暴露清单，从低强度场景开始逐步练习；避免一次性强迫暴露，也避免长期完全回避。",
+    help: "若恐惧导致无法正常上班、上学、出行、购物或社交，建议进行专业心理治疗或精神科评估。"
   },
   para: {
-    meaning: "反映对他人意图、评价和安全性的怀疑、防备与被针对感。升高时，个体可能更容易把模糊信息解释为负面。",
-    signs: "常见表现包括反复揣测别人话里含义、担心被利用、难以信任、把偶然事件与自己联系起来。",
-    advice: "建议把判断分成事实、推测和证据三栏，延迟做负面结论，并通过可信任关系进行现实检验。",
-    help: "若怀疑感强烈、持续，或导致严重人际冲突、睡眠受损和功能下降，建议寻求专业评估。"
+    meaning: "该因子反映怀疑、防备、被针对感和对他人意图的负面解释倾向。高分时，个体可能更容易把模糊信息解释为敌意、利用或不公。",
+    signs: "常见表现包括责怪别人制造麻烦、感到大多数人不可信、感到有人监视或谈论自己、认为别人没有恰当评价自己、感到别人想占便宜。",
+    advice: "建议把判断分为事实、推测和证据三栏；在做出负面结论前延迟反应，并通过可信任关系进行现实检验。",
+    help: "若怀疑感强烈、持续，造成严重人际冲突、睡眠受损或工作学习明显受影响，建议进行专业评估。"
   },
   psy: {
-    meaning: "反映思维混乱、现实感下降、疏离感、异常体验或难以解释的内在感受。该维度需要谨慎解释，不能由自评直接推断疾病。",
-    signs: "常见表现包括注意力难以回到现实任务、感到不真实、与周围人疏离、担心自己的体验不正常。",
-    advice: "建议减少熬夜和高压力刺激，保持规律生活，记录异常体验发生的时间、诱因、持续时长和影响。",
-    help: "若出现明显幻听幻视、被控制感、严重混乱、无法维持现实功能，应尽快联系精神科或急诊资源。"
+    meaning: "该因子反映疏离感、现实感变化、异常知觉体验、被控制感、思维边界感和明显孤立等内容。该因子需要谨慎解释，自评高分只提示进一步评估必要性，不能直接推断精神障碍。",
+    signs: "常见表现包括听到旁人听不到的声音、感到别人能控制思想、觉得旁人知道私下想法、有不属于自己的想法、熟悉事物变陌生、从未感到与他人亲近。",
+    advice: "建议减少熬夜、酒精和高压力刺激，保持稳定作息，记录异常体验的时间、诱因、持续时长和影响。",
+    help: "若出现明显幻听、被控制感、现实感严重受损、行为混乱或无法维持基本功能，应尽快联系精神科或急诊资源。"
   },
   other: {
-    meaning: "反映睡眠、作息、精力、效率和生活节律等补充指标。它常常是压力和情绪问题最早出现的信号之一。",
-    signs: "常见表现包括入睡困难、早醒、醒后不恢复、拖延、节律紊乱、对日常安排失去掌控感。",
-    advice: "建议固定起床时间，减少睡前屏幕刺激，建立轻量运动和任务清单，先恢复生活节律再处理复杂问题。",
-    help: "若失眠、食欲改变或效率下降持续存在，并明显影响生活，应寻求专业帮助。"
+    meaning: "该因子包括睡眠、饮食、死亡相关想法和罪责感等附加项目，常用于辅助理解总体心理压力和生活节律受损情况。它不是单一疾病维度，但对风险识别很重要。",
+    signs: "常见表现包括胃口不好、难以入睡、早醒、睡得不稳、吃得太多、想到死亡、感到有罪。",
+    advice: "建议优先稳定睡眠与饮食节律，减少睡前刺激，建立固定起床时间，并记录情绪、睡眠和饮食变化。",
+    help: "若死亡相关想法、严重失眠、食欲显著改变或罪责感持续存在，应尽快寻求专业支持。"
   }
 };
 
-const DEMO_QUESTION_BANK = {
-  som: [
-    "过去一周，我明显感到头部或身体不适影响状态。",
-    "过去一周，我感到胸闷、心慌或呼吸不太顺畅。",
-    "过去一周，我的胃肠、食欲或消化状态让我困扰。",
-    "过去一周，我感到身体疲乏、沉重或精力不足。",
-    "过去一周，我因疼痛、酸胀或麻木而感到不安。",
-    "过去一周，我容易关注身体细微变化并因此担心。",
-    "过去一周，我觉得身体不适影响了学习、工作或社交。",
-    "过去一周，我出现过头晕、发冷、发热或类似不适。",
-    "过去一周，我对自己的身体健康状态感到明显担忧。"
-  ],
-  ocd: [
-    "过去一周，我反复检查某些事情，即使知道可能没有必要。",
-    "过去一周，我难以停止某些重复想法或重复行为。",
-    "过去一周，我做事时很难放下对细节或顺序的要求。",
-    "过去一周，我觉得必须反复确认后才安心。",
-    "过去一周，我会被某些不想出现的念头反复打扰。",
-    "过去一周，我完成事情的速度明显受到反复确认影响。",
-    "过去一周，我对整洁、准确或对错的要求让我紧张。",
-    "过去一周，我担心自己遗漏了重要细节。",
-    "过去一周，我很难从某个念头中抽离出来。"
-  ],
-  inter: [
-    "过去一周，我在人际交往中容易感到不自在。",
-    "过去一周，我担心别人不认可我或评价我。",
-    "过去一周，我容易把别人的反应理解为对自己的否定。",
-    "过去一周，我在表达真实想法时感到困难。",
-    "过去一周，我觉得自己在群体中不够放松。",
-    "过去一周，我因比较自己和他人而感到压力。",
-    "过去一周，我害怕被忽视、拒绝或误解。",
-    "过去一周，我在亲近关系中感到敏感或受伤。",
-    "过去一周，我常常回想自己在人际互动中的表现。"
-  ],
-  dep: [
-    "过去一周，我感到情绪低落或提不起兴趣。",
-    "过去一周，我对原本喜欢的事情明显缺乏动力。",
-    "过去一周，我容易感到无助、失落或空虚。",
-    "过去一周，我对未来感到悲观或缺乏期待。",
-    "过去一周，我做决定或集中注意力变得困难。",
-    "过去一周，我觉得自己的价值感下降。",
-    "过去一周，我更容易独处或回避与人交流。",
-    "过去一周，我常常觉得生活压力难以承受。",
-    "过去一周，我的情绪恢复速度比平时更慢。"
-  ],
-  anx: [
-    "过去一周，我经常感到紧张、担心或坐立不安。",
-    "过去一周，我会无缘由地预期坏事发生。",
-    "过去一周，我面对任务或选择时容易过度担忧。",
-    "过去一周，我的身体紧绷、难以放松。",
-    "过去一周，我容易被突发变化打乱情绪。",
-    "过去一周，我因担心结果而反复思考。",
-    "过去一周，我觉得压力使自己难以保持平静。",
-    "过去一周，我出现过明显的惊慌或急迫感。",
-    "过去一周，我需要花较多时间让自己安定下来。"
-  ],
-  host: [
-    "过去一周，我比平时更容易烦躁或发火。",
-    "过去一周，我对他人的言行更容易产生不满。",
-    "过去一周，我很难控制自己的急躁情绪。",
-    "过去一周，我在冲突后仍长时间难以平复。",
-    "过去一周，我有想要争辩、顶撞或反击的冲动。",
-    "过去一周，我对周围环境的容忍度下降。",
-    "过去一周，我容易用消极方式解读他人的意图。",
-    "过去一周，我因愤怒影响了沟通或判断。",
-    "过去一周，我需要压抑明显的不耐烦或敌意。"
-  ],
-  phob: [
-    "过去一周，我会回避某些让我明显紧张的场景。",
-    "过去一周，我在特定地点或场合会感到强烈不安。",
-    "过去一周，我担心自己在公共场合失控或出丑。",
-    "过去一周，我因害怕不适而减少外出或活动。",
-    "过去一周，我面对人多、封闭或陌生环境时感到紧张。",
-    "过去一周，我对某些对象、场景或活动有明显回避。",
-    "过去一周，我会提前担心即将到来的社交或外出安排。",
-    "过去一周，我因担心焦虑反应而限制自己的行动。",
-    "过去一周，我觉得某些场景会触发强烈恐惧感。"
-  ],
-  para: [
-    "过去一周，我较容易怀疑别人对我有负面看法。",
-    "过去一周，我担心他人隐藏真实意图。",
-    "过去一周，我容易觉得自己被针对或被不公平对待。",
-    "过去一周，我对他人的承诺或解释不太放心。",
-    "过去一周，我会反复揣测别人话里的深层含义。",
-    "过去一周，我较难信任他人的善意。",
-    "过去一周，我担心自己的信息或隐私被利用。",
-    "过去一周，我容易把偶然事件联系到自己身上。",
-    "过去一周，我在关系中保持较强防备感。"
-  ],
-  psy: [
-    "过去一周，我有时觉得自己的想法变得很混乱。",
-    "过去一周，我觉得周围事物有不真实或疏离感。",
-    "过去一周，我偶尔感到难以把注意力放回现实任务。",
-    "过去一周，我有一些难以向别人解释的特殊感受。",
-    "过去一周，我觉得自己和周围人的距离感明显增强。",
-    "过去一周，我会担心自己的感受或想法不太正常。",
-    "过去一周，我对外界刺激的反应比平时更敏感。",
-    "过去一周，我有时感觉自己的思路难以被别人理解。",
-    "过去一周，我感到内在体验与现实生活之间有割裂感。"
-  ],
-  other: [
-    "过去一周，我的睡眠质量明显下降。",
-    "过去一周，我入睡、早醒或睡后恢复感存在困扰。",
-    "过去一周，我的食欲、作息或日常节律发生明显变化。",
-    "过去一周，我觉得休息后仍难以恢复精力。",
-    "过去一周，我更容易依赖拖延、逃避或刷手机来缓解压力。",
-    "过去一周，我对学习、工作或生活安排的掌控感下降。",
-    "过去一周，我很难维持稳定的生活节奏。",
-    "过去一周，我感到压力影响了日常效率。",
-    "过去一周，我需要更多外界支持才能完成平常事务。"
-  ]
-};
+const SCL90_ITEMS = [
+  { id: 1, text: "头痛" },
+  { id: 2, text: "神经过敏，心中不踏实" },
+  { id: 3, text: "头脑中有不必要的想法或字句盘旋" },
+  { id: 4, text: "头昏或昏倒" },
+  { id: 5, text: "对异性的兴趣减退" },
+  { id: 6, text: "对旁人责备求全" },
+  { id: 7, text: "感到别人能控制你的思想" },
+  { id: 8, text: "责怪别人制造麻烦" },
+  { id: 9, text: "忘记性大" },
+  { id: 10, text: "担心自己的衣饰整齐及仪态的端正" },
+  { id: 11, text: "容易烦恼和激动" },
+  { id: 12, text: "胸痛" },
+  { id: 13, text: "害怕空旷的场所或街道" },
+  { id: 14, text: "感到自己的精力下降，活动减慢" },
+  { id: 15, text: "想结束自己的生命" },
+  { id: 16, text: "听到旁人听不到的声音" },
+  { id: 17, text: "发抖" },
+  { id: 18, text: "感到大多数人都不可信任" },
+  { id: 19, text: "胃口不好" },
+  { id: 20, text: "容易哭泣" },
+  { id: 21, text: "同异性相处时感到害羞不自在" },
+  { id: 22, text: "感到受骗，中了圈套或有人想抓您" },
+  { id: 23, text: "无缘无故地突然感到害怕" },
+  { id: 24, text: "自己不能控制地大发脾气" },
+  { id: 25, text: "怕单独出门" },
+  { id: 26, text: "经常责怪自己" },
+  { id: 27, text: "腰痛" },
+  { id: 28, text: "感到难以完成任务" },
+  { id: 29, text: "感到孤独" },
+  { id: 30, text: "感到苦闷" },
+  { id: 31, text: "过分担忧" },
+  { id: 32, text: "对事物不感兴趣" },
+  { id: 33, text: "感到害怕" },
+  { id: 34, text: "我的感情容易受到伤害" },
+  { id: 35, text: "旁人能知道您的私下想法" },
+  { id: 36, text: "感到别人不理解您不同情您" },
+  { id: 37, text: "感到人们对你不友好，不喜欢你" },
+  { id: 38, text: "做事必须做得很慢以保证做得正确" },
+  { id: 39, text: "心跳得很厉害" },
+  { id: 40, text: "恶心或胃部不舒服" },
+  { id: 41, text: "感到比不上他人" },
+  { id: 42, text: "肌肉酸痛" },
+  { id: 43, text: "感到有人在监视您谈论您" },
+  { id: 44, text: "难以入睡" },
+  { id: 45, text: "做事必须反复检查" },
+  { id: 46, text: "难以作出决定" },
+  { id: 47, text: "怕乘电车、公共汽车、地铁或火车" },
+  { id: 48, text: "呼吸有困难" },
+  { id: 49, text: "一阵阵发冷或发热" },
+  { id: 50, text: "因为感到害怕而避开某些东西，场合或活动" },
+  { id: 51, text: "脑子变空了" },
+  { id: 52, text: "身体发麻或刺痛" },
+  { id: 53, text: "喉咙有梗塞感" },
+  { id: 54, text: "感到对前途没有希望" },
+  { id: 55, text: "不能集中注意力" },
+  { id: 56, text: "感到身体的某一部分软弱无力" },
+  { id: 57, text: "感到紧张或容易紧张" },
+  { id: 58, text: "感到手或脚发沉" },
+  { id: 59, text: "想到有关死亡的事" },
+  { id: 60, text: "吃得太多" },
+  { id: 61, text: "当别人看着您或谈论您时感到不自在" },
+  { id: 62, text: "有一些不属于您自己的想法" },
+  { id: 63, text: "有想打人或伤害他人的冲动" },
+  { id: 64, text: "醒得太早" },
+  { id: 65, text: "必须反复洗手、点数目或触摸某些东西" },
+  { id: 66, text: "睡得不稳不深" },
+  { id: 67, text: "有想摔坏或破坏东西的冲动" },
+  { id: 68, text: "有一些别人没有的想法或念头" },
+  { id: 69, text: "感到对别人神经过敏" },
+  { id: 70, text: "在商店或电影院等人多的地方感到不自在" },
+  { id: 71, text: "感到任何事情都很难做" },
+  { id: 72, text: "一阵阵恐惧或惊恐" },
+  { id: 73, text: "感到在公共场合吃东西很不舒服" },
+  { id: 74, text: "经常与人争论" },
+  { id: 75, text: "单独一人时神经很紧张" },
+  { id: 76, text: "别人对您的成绩没有作出恰当的评价" },
+  { id: 77, text: "即使和别人在一起也感到孤单" },
+  { id: 78, text: "感到坐立不安心神不宁" },
+  { id: 79, text: "感到自己没有什么价值" },
+  { id: 80, text: "感到熟悉的东西变成陌生或不象是真的" },
+  { id: 81, text: "大叫或摔东西" },
+  { id: 82, text: "害怕会在公共场合昏倒" },
+  { id: 83, text: "感到别人想占您的便宜" },
+  { id: 84, text: "为一些有关“性”的想法而很苦恼" },
+  { id: 85, text: "认为应该因为自己的过错而受到惩罚" },
+  { id: 86, text: "感到要赶快把事情做完" },
+  { id: 87, text: "感到自己的身体有严重问题" },
+  { id: 88, text: "从未感到和其他人很亲近" },
+  { id: 89, text: "感到自己有罪" },
+  { id: 90, text: "感到自己的脑子有毛病" }
+];
 
-const QUESTIONS = DIMENSIONS.flatMap((dim) =>
-  DEMO_QUESTION_BANK[dim.key].map((text, i) => ({
-    id: DIMENSIONS.findIndex((d) => d.key === dim.key) * 9 + i + 1,
-    dim: dim.key,
-    text
-  }))
-);
+const QUESTIONS = SCL90_ITEMS.map((q) => ({
+  ...q,
+  dim: findDimensionKey(q.id)
+}));
+
+const CRISIS_ITEMS = [
+  { id: 15, threshold: 2, label: "自杀/结束生命相关想法" },
+  { id: 59, threshold: 4, label: "死亡相关想法较重" },
+  { id: 63, threshold: 3, label: "伤害他人冲动" },
+  { id: 67, threshold: 3, label: "破坏冲动" },
+  { id: 81, threshold: 3, label: "失控性表达/摔东西" }
+];
 
 const state = {
   page: 0,
@@ -306,34 +321,47 @@ function validatePage() {
 }
 
 function calculateResults() {
-  const scores = QUESTIONS.map((q) => Number(state.answers[q.id] ?? 0));
-  const total = scores.reduce((a, b) => a + b, 0);
+  // 中文 1-5 分体系：1=没有，5=严重；阳性项目通常按原始分 > 1 计算。
+  // 国际常用 0-4 指标体系：normalized = raw - 1；GSI = normalizedTotal / 90；PST = normalized > 0 的项目数；PSDI = normalizedTotal / PST。
+  const rawScores = QUESTIONS.map((q) => Number(state.answers[q.id] ?? 0));
+  const normScores = rawScores.map((s) => Math.max(0, s - 1));
+  const total = rawScores.reduce((a, b) => a + b, 0);
   const mean = total / QUESTIONS.length;
-  const positiveScores = scores.filter((s) => s > 0);
-  const positiveCount = positiveScores.length;
-  const psdi = positiveCount ? positiveScores.reduce((a, b) => a + b, 0) / positiveCount : 0;
+  const normalizedTotal = normScores.reduce((a, b) => a + b, 0);
+  const gsi = normalizedTotal / QUESTIONS.length;
+  const positiveScores = rawScores.filter((s) => s > 1);
+  const positiveCount = positiveScores.length; // PST in the 0-4 framework
+  const pst = positiveCount;
+  const psdi = positiveCount ? normalizedTotal / positiveCount : 0;
 
   const dimensions = DIMENSIONS.map((dim) => {
     const qs = QUESTIONS.filter((q) => q.dim === dim.key);
-    const values = qs.map((q) => Number(state.answers[q.id] ?? 0));
-    const sum = values.reduce((a, b) => a + b, 0);
+    const rawValues = qs.map((q) => Number(state.answers[q.id] ?? 0));
+    const normValues = rawValues.map((v) => Math.max(0, v - 1));
+    const sum = rawValues.reduce((a, b) => a + b, 0);
+    const normSum = normValues.reduce((a, b) => a + b, 0);
     return {
       ...dim,
-      count: values.length,
+      count: rawValues.length,
       sum,
-      mean: sum / values.length,
-      positiveCount: values.filter((v) => v > 0).length
+      mean: sum / rawValues.length,
+      normSum,
+      normMean: normSum / normValues.length,
+      positiveCount: rawValues.filter((v) => v > 1).length
     };
   }).sort((a, b) => b.mean - a.mean);
 
-  return { total, mean, positiveCount, psdi, dimensions };
+  const chineseScreenPositive = total >= CONFIG.screeningRules.totalPositiveCutoff || positiveCount >= CONFIG.screeningRules.positiveItemCutoff || dimensions.some((d) => d.mean >= CONFIG.screeningRules.factorMeanCutoff);
+
+  return { total, mean, normalizedTotal, gsi, pst, positiveCount, psdi, dimensions, chineseScreenPositive };
 }
 
 function getRisk(mean) {
-  if (mean < 1) return { label: "低困扰水平", cls: "risk-low", description: "当前总体困扰水平较低，建议保持规律作息、运动和稳定社交支持。" };
-  if (mean < 2) return { label: "轻度困扰", cls: "risk-mid", description: "当前存在一定心理困扰，建议关注压力来源，尝试睡眠、运动、情绪记录等自我调节方式。" };
-  if (mean < 3) return { label: "中高困扰", cls: "risk-high", description: "当前困扰水平较明显，建议尽快寻求专业心理咨询、精神科或校企心理服务支持。" };
-  return { label: "高困扰水平", cls: "risk-high", description: "当前困扰水平较高，建议优先联系专业人员进行进一步评估；若伴随危机想法，请立即寻求线下帮助。" };
+  // mean 为中文原始均分，1-5；同时报告中展示 GSI/PST/PSDI。
+  if (mean < 2) return { label: "总体低风险", cls: "risk-low", description: "当前总体症状负担较低，建议保持规律作息、运动和稳定社交支持。" };
+  if (mean < 3) return { label: "轻度至中度风险", cls: "risk-mid", description: "当前存在一定心理困扰，建议关注压力来源，尝试睡眠、运动、情绪记录等自我调节方式。" };
+  if (mean < 4) return { label: "中度至偏高风险", cls: "risk-high", description: "当前困扰水平较明显，建议尽快寻求专业心理咨询、精神科或校企心理服务支持。" };
+  return { label: "高风险提示", cls: "risk-high", description: "当前困扰水平较高，建议优先联系专业人员进行进一步评估；若伴随危机想法，请立即寻求线下帮助。" };
 }
 
 function renderRadar(dimensions) {
@@ -395,10 +423,10 @@ function renderBarChart(dimensions) {
 
 
 function getDimensionLevel(mean) {
-  if (mean < 1) return { label: "低水平", cls: "level-low", text: "该维度困扰较低，当前未表现为主要压力来源。" };
-  if (mean < 2) return { label: "轻度", cls: "level-mid", text: "该维度存在一定困扰，建议持续观察并进行生活方式调整。" };
-  if (mean < 3) return { label: "中度", cls: "level-high", text: "该维度困扰较明显，建议结合现实压力源进行重点关注。" };
-  return { label: "较高", cls: "level-high", text: "该维度困扰较高，若持续存在或影响功能，建议寻求专业评估。" };
+  if (mean < 2) return { label: "低水平", cls: "level-low", text: "该维度困扰较低，当前未表现为主要压力来源。" };
+  if (mean < 3) return { label: "轻度", cls: "level-mid", text: "该维度存在一定困扰，建议持续观察并进行生活方式调整。" };
+  if (mean < 4) return { label: "中度", cls: "level-high", text: "该维度困扰较明显，建议结合现实压力源进行重点关注。" };
+  return { label: "偏重/较高", cls: "level-high", text: "该维度困扰较高，若持续存在或影响功能，建议寻求专业评估。" };
 }
 
 function escapeHtml(text) {
@@ -464,8 +492,10 @@ function buildReportText(result) {
     `一、核心结果`,
     `总分：${result.total.toFixed(0)}`,
     `总均分：${result.mean.toFixed(2)}`,
-    `阳性项目数：${result.positiveCount}`,
-    `阳性症状均分：${result.psdi.toFixed(2)}`,
+    `阳性项目数/PST：${result.positiveCount}`,
+    `GSI（0-4总体严重度）：${result.gsi.toFixed(2)}`,
+    `PSDI（阳性症状强度）：${result.psdi.toFixed(2)}`,
+    `常用筛查规则提示：${result.chineseScreenPositive ? "达到进一步关注标准" : "未达到常用阳性筛查标准"}`,
     `总体提示：${risk.label}`,
     `突出维度：${top3.map((d) => `${d.name} ${d.mean.toFixed(2)}`).join("；")}`,
     ``,
@@ -494,6 +524,7 @@ function buildExportPayload() {
       name: dim.name,
       sum: dim.sum,
       mean: Number(dim.mean.toFixed(4)),
+      normalizedMean: Number(dim.normMean.toFixed(4)),
       count: dim.count,
       positiveCount: dim.positiveCount,
       level: level.label,
@@ -508,7 +539,11 @@ function buildExportPayload() {
       total: state.lastResult.total,
       mean: Number(state.lastResult.mean.toFixed(4)),
       positiveCount: state.lastResult.positiveCount,
+      pst: state.lastResult.pst,
+      normalizedTotal: state.lastResult.normalizedTotal,
+      gsi: Number(state.lastResult.gsi.toFixed(4)),
       psdi: Number(state.lastResult.psdi.toFixed(4)),
+      chineseScreenPositive: state.lastResult.chineseScreenPositive,
       riskLabel: state.lastResult.risk.label,
       riskDescription: state.lastResult.risk.description
     },
@@ -769,6 +804,9 @@ function renderResults() {
   $("meanScore").textContent = result.mean.toFixed(2);
   $("positiveCount").textContent = result.positiveCount;
   $("psdiScore").textContent = result.psdi.toFixed(2);
+  if ($("gsiScore")) $("gsiScore").textContent = result.gsi.toFixed(2);
+  if ($("pstScore")) $("pstScore").textContent = result.pst;
+  if ($("screeningFlag")) $("screeningFlag").textContent = result.chineseScreenPositive ? "需关注" : "未触发";
 
   const orderedForRadar = DIMENSIONS.map((dim) => result.dimensions.find((d) => d.key === dim.key));
   renderRadar(orderedForRadar);
@@ -776,7 +814,12 @@ function renderResults() {
   renderDimensionDetails(result.dimensions);
 
   const top3 = result.dimensions.slice(0, 3);
-  $("interpretation").textContent = `${risk.description} 当前相对突出的维度为：${top3.map((d) => `${d.name}（均分 ${d.mean.toFixed(2)}）`).join("、")}。请把该结果理解为自我观察线索，而不是疾病标签。若困扰持续两周以上、明显影响工作学习或关系，建议预约专业人员进一步评估。`;
+  const triggeredCrisis = CRISIS_ITEMS.filter((item) => Number(state.answers[item.id] || 0) >= item.threshold);
+  if ($("crisisWarning")) {
+    $("crisisWarning").style.display = triggeredCrisis.length ? "block" : "none";
+    $("crisisWarning").textContent = triggeredCrisis.length ? `安全风险提示：检测到 ${triggeredCrisis.map((i) => i.label).join("、")}。请优先联系现实中的可信任人员、当地急救或专业心理危机资源。` : "";
+  }
+  $("interpretation").textContent = `${risk.description} 本次总分 ${result.total}，GSI ${result.gsi.toFixed(2)}，PST ${result.pst}，PSDI ${result.psdi.toFixed(2)}；常用筛查规则显示：${result.chineseScreenPositive ? "建议进一步关注或评估" : "暂未触发阳性筛查阈值"}。当前相对突出的维度为：${top3.map((d) => `${d.name}（均分 ${d.mean.toFixed(2)}）`).join("、")}。请把该结果理解为自我观察线索，而不是疾病标签。若困扰持续两周以上、明显影响工作学习或关系，建议预约专业人员进一步评估。`;
   $("dimensionSummary").innerHTML = top3.map((d) => `<span class="dimension-chip">${d.name}：${d.mean.toFixed(2)}</span>`).join("");
 
   state.reportText = buildReportText(result);
@@ -801,14 +844,56 @@ function resetAll() {
   showView("consentView");
 }
 
-$("verifyForm").addEventListener("submit", (event) => {
+function isApiConfigured() {
+  return CONFIG.accessMode === "api" && CONFIG.apiBase && !CONFIG.apiBase.includes("YOUR-WORKER-NAME");
+}
+
+async function redeemAccessCode(code) {
+  if (!isApiConfigured()) {
+    if (code !== CONFIG.localAccessCode) {
+      return { ok: false, message: "访问码不正确，请重新输入" };
+    }
+    return { ok: true, sessionToken: "LOCAL-DEMO-SESSION" };
+  }
+  const res = await fetch(`${CONFIG.apiBase.replace(/\/$/, "")}/api/redeem`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code })
+  });
+  let data = {};
+  try { data = await res.json(); } catch { data = {}; }
+  if (!res.ok || !data.ok) return { ok: false, message: data.message || "访问码验证失败" };
+  return data;
+}
+
+$("verifyForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const code = $("accessCode").value.trim();
-  if (code !== CONFIG.accessCode) {
-    toast("访问码不正确，请重新输入");
+  if (!code) {
+    toast("请输入访问码");
     return;
   }
-  showView("consentView");
+  const submitBtn = event.target.querySelector("button[type='submit']");
+  const oldText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "验证中...";
+  try {
+    const result = await redeemAccessCode(code);
+    if (!result.ok) {
+      toast(result.message || "访问码不正确或已使用");
+      return;
+    }
+    sessionStorage.setItem("scl90_session_token", result.sessionToken || "");
+    sessionStorage.setItem("scl90_access_code_mask", code.slice(0, 4) + "****");
+    toast(isApiConfigured() ? "验证成功，访问码已核销" : "本地演示验证成功");
+    showView("consentView");
+  } catch (err) {
+    console.error(err);
+    toast("无法连接访问码服务器，请检查网络或后台配置");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText;
+  }
 });
 
 $("agreeConsent").addEventListener("change", (event) => {

@@ -1,176 +1,248 @@
 <div align="center">
   <img src="assets/mindscope90-hero.svg" alt="MindScope 90 标题图" width="100%" />
 
-  # MindScope 90
+  # SCL-90 在线测评系统
 
-  ### 智能心理健康自评平台
+  ### 授权版症状自评量表 · PDF报告 · 一次性访问码核销
 
   [English](README.md) · [简体中文](README_CN.md)
 
   <p>
-    <img alt="Pure Frontend" src="https://img.shields.io/badge/Pure%20Frontend-HTML%20%7C%20CSS%20%7C%20JS-22D3EE?style=for-the-badge&labelColor=0F172A">
-    <img alt="PDF Export" src="https://img.shields.io/badge/Export-PDF%20%7C%20PNG%20%7C%20CSV%20%7C%20JSON-A78BFA?style=for-the-badge&labelColor=0F172A">
-    <img alt="No Backend" src="https://img.shields.io/badge/Backend-Not%20Required-34D399?style=for-the-badge&labelColor=0F172A">
-    <img alt="GitHub Pages" src="https://img.shields.io/badge/Deploy-GitHub%20Pages-F8FAFC?style=for-the-badge&labelColor=0F172A&color=64748B">
+    <img alt="SCL-90" src="https://img.shields.io/badge/Scale-SCL--90-22D3EE?style=for-the-badge&labelColor=0F172A">
+    <img alt="Scoring" src="https://img.shields.io/badge/Scoring-GSI%20%7C%20PST%20%7C%20PSDI-A78BFA?style=for-the-badge&labelColor=0F172A">
+    <img alt="Export" src="https://img.shields.io/badge/Export-PDF%20%7C%20PNG%20%7C%20CSV%20%7C%20JSON-34D399?style=for-the-badge&labelColor=0F172A">
+    <img alt="Access Codes" src="https://img.shields.io/badge/Access-One--Time%20Codes-F59E0B?style=for-the-badge&labelColor=0F172A">
   </p>
 
-  **一个本地优先的网页心理自评系统，支持即时评分、可视化分析、指标详细解释以及 PDF / PNG / CSV / JSON 报告导出。**
-
-  [在线演示](#在线演示) · [功能特性](#功能特性) · [快速开始](#快速开始) · [GitHub-Pages-部署](#github-pages-部署) · [商业化说明](#商业化说明)
+  **一套可部署的 SCL-90 症状自评量表网页系统，支持授权题库、自动评分、图表分析、指标解释、PDF报告导出和淘宝售卖所需的一次性访问码核销。**
 </div>
 
 ---
 
 ## 项目简介
 
-**MindScope 90** 是一个浏览器端心理健康自评平台，适合用于 H5 测评页面、付费测评验证、报告生成和后续小程序迁移。系统包含访问码验证、知情同意、90 项测评流程、自动评分、图表展示、维度解释和多格式导出能力。
+本项目是一套完整的 SCL-90 在线测评系统，包含：
 
-项目默认是**纯前端静态网页**，不依赖服务器、不依赖数据库，可以直接部署到 GitHub Pages，也可以后续迁移到国内 H5、小程序或带后端的正式商业系统。
+- 90 项 SCL-90 题目流程
+- 1–5 分选项
+- 必答校验与进度显示
+- 总分、总均分
+- GSI、PST、PSDI 国际常用总体指标
+- 10 个因子维度评分，包括睡眠/饮食等附加项目
+- 每个指标的进一步解释
+- PDF 报告导出
+- 雷达图 / 条形图 PNG 导出
+- CSV / JSON / ZIP 完整数据导出
+- Cloudflare Worker + KV 一次性访问码后台
+- `admin.html` 管理页，可生成、导入、查看、导出访问码
 
-> **重要提示：** 本系统仅用于心理自评、科普展示和非诊断性筛查，不构成医学诊断、治疗建议或危机干预服务。
-
----
-
-## 功能特性
-
-| 功能 | 说明 |
-| --- | --- |
-| **测评流程** | 90 项问卷、进度展示、必答校验、分组评分和完整交互流程。 |
-| **访问控制** | 支持简单前端访问码，适合演示、内测和人工售卖。 |
-| **结果面板** | 展示总分、总均分、阳性项目数、阳性症状均分和维度排序。 |
-| **指标解释** | 每个指标支持进一步解释，包括指标含义、常见表现、自我调节建议和专业帮助提示。 |
-| **图表分析** | 支持雷达图和条形图，直观展示各维度状态。 |
-| **报告导出** | 支持 PDF 报告、PNG 图表、CSV 结果表、JSON 原始数据和 ZIP 总包下载。 |
-| **本地优先** | 默认不上传用户数据，全部在浏览器本地完成计算与报告生成。 |
-| **部署友好** | 可部署到 GitHub Pages、Cloudflare Pages、Netlify、Vercel 或任意静态网站服务。 |
+> 本系统用于心理健康筛查与自我觉察，不构成医学诊断、治疗建议或危机干预服务。
 
 ---
 
-## 在线演示
-
-部署到 GitHub Pages 后，访问地址通常类似：
-
-```text
-https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY_NAME/
-```
-
-示例：
-
-```text
-https://luzimu.github.io/mental-test/
-```
-
-你可以将该网址生成二维码，用于用户扫码访问。
-
----
-
-## 项目结构
+## 文件结构
 
 ```text
 .
-├── index.html              # 主测评页面
-├── styles.css              # 页面样式与响应式布局
-├── app.js                  # 测评逻辑、评分、图表和导出
-├── README.md               # 英文 README
-├── README_CN.md            # 中文 README
-└── assets/
-    └── mindscope90-hero.svg # README 标题图
+├── index.html                  # 主测评页面
+├── styles.css                  # 页面样式与响应式布局
+├── app.js                      # 题库、评分、图表、报告导出和访问码逻辑
+├── admin.html                  # 访问码管理页面
+├── README.md                   # 英文 README
+├── README_CN.md                # 中文 README
+├── assets/
+│   └── mindscope90-hero.svg    # README 标题图
+└── worker/
+    ├── worker.js               # Cloudflare Worker 一次性访问码后台
+    └── wrangler.toml           # Worker 部署配置
 ```
 
 ---
 
-## 快速开始
+## 评分说明
 
-### 1. 下载或克隆项目
+系统同时输出中文常用原始分指标和 SCL-90-R 国际常用总体指标。
 
-```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME.git
-cd YOUR_REPOSITORY_NAME
+| 指标 | 含义 |
+| --- | --- |
+| 总分 | 90 个题目原始分之和，采用 1–5 分体系。 |
+| 总均分 | 总分除以 90。 |
+| 阳性项目数 / PST | 原始分大于 1 的项目数量。 |
+| GSI | Global Severity Index，将 1–5 分转换为 0–4 后计算总体严重度。 |
+| PSDI | Positive Symptom Distress Index，阳性症状的平均强度。 |
+| 因子分 | 某一维度内题目的平均分。 |
+
+默认常用筛查规则在 `app.js` 中配置：
+
+```js
+screeningRules: {
+  totalPositiveCutoff: 160,
+  positiveItemCutoff: 43,
+  factorMeanCutoff: 2
+}
 ```
 
-### 2. 本地打开
-
-可以直接双击打开：
-
-```text
-index.html
-```
-
-也可以用本地静态服务预览：
-
-```bash
-python -m http.server 8000
-```
-
-然后访问：
-
-```text
-http://localhost:8000
-```
+如果你有正式授权手册中的常模表、T 分转换表或行业机构要求，可继续把这些规则接入系统。
 
 ---
 
-## 配置访问码
+## 本地演示模式
 
-打开 `app.js`，修改配置项：
+默认是本地演示模式：
 
 ```js
 const CONFIG = {
-  appName: "MindScope 90",
-  accessCode: "SCL2026"
+  accessMode: "local",
+  localAccessCode: "CHANGE_ME_LOCAL_CODE"
 };
 ```
 
-正式售卖前，把 `SCL2026` 改成你自己的访问码。
-
-> 纯前端访问码只适合演示和低风险内测。如果正式商业化，建议接入服务端的一人一码核销系统。
+这种模式只适合测试。因为纯前端访问码可以被懂技术的用户从源码中看到，不适合正式淘宝售卖。
 
 ---
 
-## GitHub Pages 部署
+## 一次性访问码模式
 
-1. 新建 GitHub 仓库。
-2. 上传 `index.html`、`styles.css`、`app.js`、`README.md`、`README_CN.md` 和 `assets/` 文件夹。
-3. 进入 **Settings → Pages**。
-4. `Source` 选择 `Deploy from a branch`。
-5. `Branch` 选择 `main`，文件夹选择 `/root`。
-6. 保存后等待部署地址生成。
+正式放到淘宝售卖时，建议改为服务端核销：
+
+```js
+const CONFIG = {
+  accessMode: "api",
+  apiBase: "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev"
+};
+```
+
+用户输入有效访问码后，后台会把该访问码标记为 `used`，同一个访问码不能再次使用。
 
 ---
 
-## 商业化说明
+## GitHub Pages 部署网页
 
-推荐的早期商业化流程：
+1. 把以下文件上传到 GitHub 仓库根目录：
 
 ```text
-用户扫码进入页面
+index.html
+styles.css
+app.js
+admin.html
+README.md
+README_CN.md
+assets/
+worker/
+```
+
+2. 进入 GitHub 仓库。
+3. 打开 **Settings → Pages**。
+4. `Source` 选择 `Deploy from a branch`。
+5. `Branch` 选择 `main`，文件夹选择 `/root`。
+6. 等待页面生成。
+
+访问地址通常是：
+
+```text
+https://你的用户名.github.io/仓库名/
+```
+
+---
+
+## 部署 Cloudflare Worker 访问码后台
+
+### 1. 安装 Wrangler
+
+```bash
+npm install -g wrangler
+wrangler login
+```
+
+### 2. 创建 KV 命名空间
+
+```bash
+cd worker
+npx wrangler kv namespace create ACCESS_CODES
+```
+
+把生成的 namespace id 填入 `worker/wrangler.toml`：
+
+```toml
+[[kv_namespaces]]
+binding = "ACCESS_CODES"
+id = "你的_KV_NAMESPACE_ID"
+```
+
+### 3. 设置后台管理员密钥
+
+```bash
+npx wrangler secret put ADMIN_TOKEN
+```
+
+这里输入一个只有你自己知道的强密码。`admin.html` 需要用它管理访问码。
+
+### 4. 部署 Worker
+
+```bash
+npx wrangler deploy
+```
+
+部署成功后，把 Worker 地址填入 `app.js`：
+
+```js
+accessMode: "api",
+apiBase: "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev"
+```
+
+---
+
+## 使用访问码管理页
+
+打开：
+
+```text
+https://你的用户名.github.io/仓库名/admin.html
+```
+
+输入：
+
+- Worker API 地址
+- Admin Token
+
+然后你可以：
+
+- 生成访问码
+- 导入访问码
+- 查看有效访问码
+- 查看已使用访问码
+- 导出访问码 CSV
+
+不要把 Admin Token 发给用户。
+
+---
+
+## 淘宝售卖流程
+
+```text
+用户在淘宝下单
+↓
+你在 admin.html 复制一个未使用访问码
+↓
+通过淘宝聊天发给用户
+↓
+用户扫码进入 GitHub Pages 测评页面
 ↓
 输入访问码
 ↓
-完成心理自评
+后台自动核销，该码变为已使用
 ↓
-生成结果报告
-↓
-下载 PDF / 图表 / 数据包
+用户完成 SCL-90 测评并下载 PDF 报告
 ```
-
-正式商业化时，建议补充：
-
-- 服务端订单验证
-- 一人一码管理
-- 支付接口
-- 报告历史记录
-- 隐私政策和用户协议
-- 用户数据删除机制
-- 危机提示与专业转介说明
-- 如使用第三方心理量表，需确认题项、评分规则、常模和商用授权
 
 ---
 
-## 安全与合规声明
+## 安全提示
 
-MindScope 90 仅用于心理健康自评、教育展示和非诊断性筛查，不构成医学诊断、治疗建议或危机干预服务。
+如果用户报告中出现明显高困扰、自伤想法、伤人冲动、幻听/被控制感等高风险内容，系统会给出安全提示。该提示不能替代专业干预，用户应及时联系当地急救、精神科、心理危机干预资源或身边可信任的人。
 
-如果用户存在严重痛苦、自伤想法或现实危险，应立即联系当地急救服务或专业心理健康服务人员。
+---
 
-如果你计划基于第三方心理量表进行商业化发布，请在上线前确认量表版权、授权范围、计分规则、常模资料和专业使用要求。
+## 授权与合规说明
+
+本项目是技术实现包。题目内容、常模表、计分规则、商业使用权、专业使用要求和隐私合规义务，需要根据你自己的 SCL-90 授权文件和所在地监管要求处理。

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>心理健康自评系统｜SCL-90 兼容框架</title>
+  <title>SCL-90 症状自评量表｜在线心理健康筛查</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -13,9 +13,9 @@
   <main class="app-shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">Mental Health Screening</p>
-        <h1>心理健康自评系统</h1>
-        <p class="subtitle">SCL-90 商用兼容框架 · 前端本地评分 · 可迁移至 H5 / 小程序</p>
+        <p class="eyebrow">SCL-90 Self-reporting Inventory</p>
+        <h1>SCL-90 症状自评量表</h1>
+        <p class="subtitle">90项症状清单 · GSI / PST / PSDI 国际常用指标 · PDF报告与数据导出</p>
       </div>
       <div class="hero-card">
         <span class="hero-number">90</span>
@@ -28,9 +28,9 @@
         <div>
           <span class="badge">系统验证</span>
           <h2>请输入测评访问码</h2>
-          <p class="muted">演示版本使用前端访问码进行体验验证。正式售卖时请接入服务端订单校验、微信支付或知识付费平台。</p>
+          <p class="muted">请输入购买后获得的一次性访问码。正式售卖版本建议接入服务端核销，访问码使用后自动失效。</p>
           <div class="notice warning">
-            <strong>重要提示：</strong>本系统仅用于心理健康筛查与自我觉察，不提供医学诊断、治疗建议或危机干预服务。
+            <strong>重要提示：</strong>本量表用于心理健康筛查与自我觉察，结果不等同于医学诊断、治疗建议或危机干预服务。
           </div>
         </div>
         <form id="verifyForm" class="verify-box">
@@ -47,9 +47,9 @@
       <h2>开始前请确认</h2>
       <div class="consent-grid">
         <div class="consent-item">测评结果只反映近一段时间的主观感受，不等同于临床诊断。</div>
-        <div class="consent-item">本演示版不上传、不保存个人数据，结果仅在当前浏览器本地计算。</div>
+        <div class="consent-item">系统仅核销访问码；测评答案与报告默认在浏览器本地计算，不上传个人作答内容。</div>
         <div class="consent-item">若出现持续痛苦、自伤或伤人想法，请立即联系身边可信任的人或当地急救/心理危机热线。</div>
-        <div class="consent-item">商用前请替换为已授权量表题目、常模、解释规则，并完善隐私政策。</div>
+        <div class="consent-item">商用前请确认量表授权、隐私政策、用户协议、危机提示和数据处理边界。</div>
       </div>
       <label class="check-line">
         <input id="agreeConsent" type="checkbox" />
@@ -83,7 +83,7 @@
         <div>
           <span class="badge">测评报告</span>
           <h2>心理健康自评结果</h2>
-          <p class="muted">以下结果基于本地评分规则自动生成，仅用于筛查与自我觉察。</p>
+          <p class="muted">以下结果基于 SCL-90 原始分、GSI、PST、PSDI 与常用筛查规则自动生成，仅用于筛查与自我觉察。</p>
         </div>
         <div id="riskPill" class="risk-pill">--</div>
       </div>
@@ -92,7 +92,10 @@
         <div class="score-card"><span>总分</span><strong id="totalScore">--</strong></div>
         <div class="score-card"><span>总均分</span><strong id="meanScore">--</strong></div>
         <div class="score-card"><span>阳性项目数</span><strong id="positiveCount">--</strong></div>
-        <div class="score-card"><span>阳性症状均分</span><strong id="psdiScore">--</strong></div>
+        <div class="score-card"><span>PSDI</span><strong id="psdiScore">--</strong></div>
+        <div class="score-card"><span>GSI</span><strong id="gsiScore">--</strong></div>
+        <div class="score-card"><span>PST</span><strong id="pstScore">--</strong></div>
+        <div class="score-card"><span>筛查提示</span><strong id="screeningFlag">--</strong></div>
       </div>
 
       <div class="result-grid">
@@ -108,6 +111,7 @@
 
       <section class="report-card">
         <h3>结果解释</h3>
+        <div id="crisisWarning" class="crisis-warning" style="display:none"></div>
         <p id="interpretation" class="interpretation"></p>
         <div id="dimensionSummary" class="dimension-summary"></div>
       </section>
@@ -142,8 +146,8 @@
     </section>
 
     <footer class="footer">
-      <span>© 2026 心理健康自评系统演示版</span>
-      <span>不采集个人数据 · 本地计算 · 商用请完成授权与合规审查</span>
+      <span>© 2026 SCL-90 在线测评系统</span>
+      <span>一次性访问码核销 · 本地报告生成 · 商用请完成授权与合规审查</span>
     </footer>
   </main>
 
