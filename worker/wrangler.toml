@@ -13,4 +13,4 @@ ALLOWED_ORIGIN = "*"
 
 [[kv_namespaces]]
 binding = "ACCESS_CODES"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "05fa64bac78d409295b51cf73ef4e191"
