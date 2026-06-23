@@ -10,9 +10,9 @@ const CONFIG = {
   appName: "SCL-90 症状自评量表",
   // GitHub Pages 只能托管静态页面，无法安全实现“一码一次”。
   // 正式淘宝售卖请将 accessMode 设为 "api"，并把 apiBase 改成 Cloudflare Worker 地址。
-  accessMode: "local", // "local" 用于本地演示；"api" 用于服务端一次性核销
+  accessMode: "api", // "local" 用于本地演示；"api" 用于服务端一次性核销
   localAccessCode: "CHANGE_ME_LOCAL_CODE",
-  apiBase: "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev",
+  apiBase: " https://luzimu.workers.dev",
   pageSize: 10,
   scaleMin: 1,
   scaleMax: 5,
