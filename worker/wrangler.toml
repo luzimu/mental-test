@@ -13,4 +13,4 @@ ALLOWED_ORIGIN = "*"
 
 [[kv_namespaces]]
 binding = "ACCESS_CODES"
-id = "05fa64bac78d409295b51cf73ef4e191"
+id = "XXXXX"
