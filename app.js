@@ -12,7 +12,7 @@ const CONFIG = {
   // 正式淘宝售卖请将 accessMode 设为 "api"，并把 apiBase 改成 Cloudflare Worker 地址。
   accessMode: "api", // "local" 用于本地演示；"api" 用于服务端一次性核销
   localAccessCode: "CHANGE_ME_LOCAL_CODE",
-  apiBase: " https://luzimu.workers.dev",
+  apiBase: " https://scl90-access-code-worker.luzimu.workers.dev",
   pageSize: 10,
   scaleMin: 1,
   scaleMax: 5,
